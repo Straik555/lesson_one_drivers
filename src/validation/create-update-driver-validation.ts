@@ -1,5 +1,5 @@
 import { ErrorsResponse } from "../core/errors.type";
-import { CreateDriverModelType } from "../router/model/create-driver.model";
+import { CreateUpdateDriverModel } from "../router/model/create-update-driver.model";
 import {
   stringInputValidation,
   vehicleDescriptionInputValidation,
@@ -8,8 +8,8 @@ import {
 } from "./driverInputValidation";
 import { StringValidationVariant } from "../types/input-validation.type";
 
-export const createDriverValidation = (
-  driver: CreateDriverModelType,
+export const createUpdateDriverValidation = (
+  driver: CreateUpdateDriverModel,
   errorMessages: ErrorsResponse,
 ) => {
   for (const key in driver) {
@@ -44,7 +44,7 @@ export const createDriverValidation = (
               : undefined;
         stringInputValidation({
           errorsMessages: errorMessages.errorsMessages,
-          entity: driver[key as keyof CreateDriverModelType] as string,
+          entity: driver[key as keyof CreateUpdateDriverModel] as string,
           field: key,
           variantRegex,
         });

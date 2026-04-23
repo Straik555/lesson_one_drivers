@@ -9,5 +9,5 @@ type DriverType = {
   vehicleYear: number;
   vehicleLicensePlate: string;
   vehicleDescription: null | string;
-  vehicleFeatures: [];
+  vehicleFeatures: string[];
 };

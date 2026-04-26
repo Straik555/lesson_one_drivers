@@ -1,5 +1,9 @@
+import { DriverType } from "../drivers/types/driver.type";
+import { RideType } from "../rides/types/ride.type";
+
 type MockDbType = {
   drivers: DriverType[];
+  rides: RideType[];
 };
 
 export const mockDb: MockDbType = {
@@ -31,4 +35,5 @@ export const mockDb: MockDbType = {
       vehicleFeatures: [],
     },
   ],
+  rides: [],
 };

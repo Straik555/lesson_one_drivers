@@ -1,10 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import { setupApp } from "./setup-app";
+import { appConfig } from "./core/configs/app.configs";
 
-const app = express();
+export const app = express();
 
-const PORT = process.env.PORT ?? 3000;
+const PORT = appConfig.PORT;
 
 setupApp(app);
 

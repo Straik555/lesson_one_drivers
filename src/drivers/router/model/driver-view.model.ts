@@ -1,3 +1,3 @@
 import { DriverType } from "../../types/driver.type";
 
-export type DriverViewModel = Omit<DriverType, "id" | "created">;
+export type DriverViewModel = { id: string } & DriverType;

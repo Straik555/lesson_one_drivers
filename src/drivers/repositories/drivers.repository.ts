@@ -1,41 +1,53 @@
-import { mockDb } from "../../db/mock.db";
-import { DriverViewModel } from "../router/model/driver-view.model";
 import { DriverType } from "../types/driver.type";
+import { ObjectId, WithId } from "mongodb";
+import { driverCollection } from "../../db/mongo.db";
+import { DriverInputDtoType } from "../dto/driver-input.dto";
 
 export const driversRepository = {
-  getAll: (): DriverType[] => mockDb.drivers,
-  getById: (id: number): DriverType | null =>
-    mockDb.drivers.find((driver) => driver.id === id) ?? null,
-  create: (newDriver: DriverType) => {
-    mockDb.drivers.push(newDriver);
-    return newDriver;
+  getAll: async (): Promise<WithId<DriverType>[]> =>
+    driverCollection.find().toArray(),
+  getById: async (id: string): Promise<WithId<DriverType> | null> =>
+    (await driverCollection.findOne({ _id: new ObjectId(id) })) ?? null,
+  create: async (newDriver: DriverType): Promise<WithId<DriverType>> => {
+    const insertResult = await driverCollection.insertOne(newDriver);
+    return {
+      ...newDriver,
+      _id: insertResult.insertedId,
+    };
   },
-  update: (id: number, updatedDriver: DriverViewModel) => {
-    const driver = mockDb.drivers.find((driver) => driver.id === id);
+  update: async (id: string, dto: DriverInputDtoType): Promise<void> => {
+    const updateResult = await driverCollection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          name: dto.name,
+          phoneNumber: dto.phoneNumber,
+          email: dto.email,
+          vehicle: {
+            make: dto.vehicleMake,
+            description: dto.vehicleDescription,
+            features: dto.vehicleFeatures,
+            licensePlate: dto.vehicleLicensePlate,
+            model: dto.vehicleModel,
+            year: dto.vehicleYear,
+          },
+        },
+      },
+    );
 
-    if (!driver) {
-      return;
+    if (updateResult.matchedCount === 0) {
+      throw new Error("Driver not found");
     }
-    driver.name = updatedDriver.name;
-    driver.phoneNumber = updatedDriver.phoneNumber;
-    driver.email = updatedDriver.email;
-    driver.vehicleMake = updatedDriver.vehicleMake;
-    driver.vehicleModel = updatedDriver.vehicleModel;
-    driver.vehicleYear = updatedDriver.vehicleYear;
-    driver.vehicleLicensePlate = updatedDriver.vehicleLicensePlate;
-    driver.vehicleDescription = updatedDriver.vehicleDescription;
-    driver.vehicleFeatures = updatedDriver.vehicleFeatures;
-
     return;
   },
-  delete: (id: number) => {
-    const index = mockDb.drivers.findIndex((driver) => driver.id === id);
+  delete: async (id: string): Promise<void> => {
+    const deleteResult = await driverCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
 
-    if (index === -1) {
-      return;
+    if (deleteResult.deletedCount < 1) {
+      throw new Error("Driver not found");
     }
-
-    mockDb.drivers.splice(index, 1);
     return;
   },
 };

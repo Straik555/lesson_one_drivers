@@ -19,7 +19,7 @@ export const adminGuardMiddleware = (
     res.sendStatus(HTTP_STATUS.UNAUTHORIZED_401);
     return;
   }
-  const credentials = Buffer.from(token, "base64").toString("ascii");
+  const credentials = Buffer.from(token, "base64").toString("utf-8");
   const [username, password] = credentials.split(":");
 
   if (

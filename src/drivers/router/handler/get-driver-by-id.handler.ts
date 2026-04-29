@@ -6,25 +6,34 @@ import { HTTP_STATUS } from "../../../core/types/http-status.type";
 import { driversRepository } from "../../repositories/drivers.repository";
 import { createErrorMessages } from "../../../core/middlewares/validation/input-validation.middleware";
 import { DriverType } from "../../types/driver.type";
+import { DriverViewModel } from "../model/driver-view.model";
+import { mapToDriverViewModelUtil } from "../mappers/map-to-driver-view-model.util";
+import { WithId } from "mongodb";
 
-export const getDriverByIdHandler = (
+export const getDriverByIdHandler = async (
   req: RequestWithParams<UriParamsById>,
-  res: Response<DriverType | ErrorsResponse>,
+  res: Response<DriverViewModel | ErrorsResponse>,
 ) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const foundDriver: DriverType | null = driversRepository.getById(+id);
-  if (!foundDriver) {
-    res.status(HTTP_STATUS.NOT_FOUND_404).send(
-      createErrorMessages([
-        {
-          message: `Not found driver with that id`,
-          field: "id",
-        },
-      ]),
-    );
-    return;
+    const foundDriver: WithId<DriverType> | null =
+      await driversRepository.getById(id);
+
+    if (!foundDriver) {
+      res.status(HTTP_STATUS.NOT_FOUND_404).send(
+        createErrorMessages([
+          {
+            message: `Not found driver with that id`,
+            field: "id",
+          },
+        ]),
+      );
+      return;
+    }
+    const driverResult = mapToDriverViewModelUtil(foundDriver);
+    res.status(HTTP_STATUS.OK_200).send(driverResult);
+  } catch (error) {
+    res.sendStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR_500);
   }
-
-  res.status(HTTP_STATUS.OK_200).send(foundDriver);
 };

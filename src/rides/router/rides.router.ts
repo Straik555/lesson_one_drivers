@@ -6,6 +6,7 @@ import { getRideByIdHandler } from "./handler/get-ride-by-id.handler";
 import { paramsIdValidationMiddleware } from "../../core/middlewares/validation/params-id-validation.middleware";
 import { inputValidationMiddleware } from "../../core/middlewares/validation/input-validation.middleware";
 import { rideInputValidation } from "../validation/ride-input-validation";
+import { finishRideHandler } from "./handler/finish-ride.handler";
 
 export const ridesRouter = Router({});
 ridesRouter.use(adminGuardMiddleware);
@@ -22,4 +23,11 @@ ridesRouter.post(
   rideInputValidation,
   inputValidationMiddleware,
   createRideHandler,
+);
+
+ridesRouter.post(
+  "/:id/actions/finish",
+  paramsIdValidationMiddleware,
+  inputValidationMiddleware,
+  finishRideHandler,
 );

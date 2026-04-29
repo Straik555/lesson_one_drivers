@@ -1,14 +1,20 @@
 import "dotenv/config";
 import express from "express";
 import { setupApp } from "./setup-app";
-import { appConfig } from "./core/configs/app.configs";
+import { SETTINGS } from "./core/settings/settings";
+import { runDB } from "./db/mongo.db";
 
-export const app = express();
+const appServer = async () => {
+  const app = express();
 
-const PORT = appConfig.PORT;
+  const PORT = SETTINGS.PORT;
+  setupApp(app);
 
-setupApp(app);
+  await runDB(SETTINGS.MONGO_URL);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
+
+appServer();

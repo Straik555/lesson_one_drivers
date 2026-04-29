@@ -15,18 +15,14 @@ const priceValidation = body("price")
 const currencyValidation = body("currency")
   .isString()
   .withMessage("The currency is should be string")
-  .isIn(Object.values(Currency));
-// .custom((currency: Currency) => {
-//   const currencyField = Object.values(Currency);
-//
-//   if (!currencyField.includes(currency.toLowerCase() as Currency)) {
-//     throw new Error("The currency should contain values of Currency");
-//   }
-//   return true;
-// }); the same with isIn
+  .isIn(Object.values(Currency))
+  .withMessage("The currency must be either 'usd' or 'eu'");
 
 const driverIdValidation = body("driverId")
-  .isInt({ gt: 0 })
+  .isString()
+  .withMessage("The driver id should be string")
+  .trim()
+  .isMongoId()
   .withMessage("The driver id is incorrect format");
 
 const fromAddressValidation = body("fromAddress")

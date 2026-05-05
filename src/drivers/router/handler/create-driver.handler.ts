@@ -1,41 +1,29 @@
 import { Response } from "express";
 import { RequestWithBody } from "../../../core/types/request-general.type";
 import { HTTP_STATUS } from "../../../core/types/http-status.type";
-import { driversRepository } from "../../repositories/drivers.repository";
-import { DriverType } from "../../types/driver.type";
+import { driversService } from "../../application/driver.service";
 import { WithId } from "mongodb";
-import { DriverInputDtoType } from "../../dto/driver-input.dto";
-import { mapToDriverViewModelUtil } from "../mappers/map-to-driver-view-model.util";
-import { DriverViewModel } from "../model/driver-view.model";
+import { DriverType } from "../../types/driver.type";
+import { DriverOutputType } from "../output/driver.output.type";
+import { mapToDriverOutput } from "../mappers/map-to-driver-output.util";
+import { DriverCreateInput } from "../../types/driver-create-input.type";
+import { errorsHandler } from "../../../core/errors/errors.handler";
 
 export const createDriverHandler = async (
-  req: RequestWithBody<DriverInputDtoType>,
-  res: Response<DriverViewModel>,
+  req: RequestWithBody<DriverCreateInput>,
+  res: Response<DriverOutputType>,
 ) => {
   try {
-    const { body } = req;
+    const { attributes } = req.body.data;
 
-    const newDriver: DriverType = {
-      createdAt: new Date(),
-      name: body.name,
-      email: body.name,
-      phoneNumber: body.phoneNumber,
-      vehicle: {
-        make: body.vehicleMake,
-        description: body.vehicleDescription,
-        features: body.vehicleFeatures,
-        licensePlate: body.vehicleLicensePlate,
-        year: body.vehicleYear,
-        model: body.vehicleModel,
-      },
-    };
+    const createdDriverId: string = await driversService.create(attributes);
 
-    const newDriverCreated: WithId<DriverType> =
-      await driversRepository.create(newDriver);
-    const driverResult: DriverViewModel =
-      mapToDriverViewModelUtil(newDriverCreated);
+    const createdDriver: WithId<DriverType> =
+      await driversService.findById(createdDriverId);
+
+    const driverResult: DriverOutputType = mapToDriverOutput(createdDriver);
     res.status(HTTP_STATUS.CREATED_201).json(driverResult);
   } catch (error) {
-    res.sendStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR_500);
+    errorsHandler(error, res);
   }
 };

@@ -10,7 +10,7 @@ export const setupApp = (app: Express) => {
 
   app.use(routerPath.drivers, driversRouter);
   app.use(routerPath.rides, ridesRouter);
-  app.use(routerPath["testing/all-data"], testingRouter);
+  app.use(routerPath.testing, testingRouter);
 
   return app;
 };

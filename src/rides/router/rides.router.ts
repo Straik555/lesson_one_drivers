@@ -7,11 +7,18 @@ import { paramsIdValidationMiddleware } from "../../core/middlewares/validation/
 import { inputValidationMiddleware } from "../../core/middlewares/validation/input-validation.middleware";
 import { rideInputValidation } from "../validation/ride-input-validation";
 import { finishRideHandler } from "./handler/finish-ride.handler";
+import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting-validation.middleware";
+import { RideSortField } from "../types/ride-sort-field.type";
 
 export const ridesRouter = Router({});
 ridesRouter.use(adminGuardMiddleware);
 
-ridesRouter.get("/", getRidesListHandler);
+ridesRouter.get(
+  "/",
+  paginationAndSortingValidation(RideSortField),
+  inputValidationMiddleware,
+  getRidesListHandler,
+);
 ridesRouter.get(
   "/:id",
   paramsIdValidationMiddleware,

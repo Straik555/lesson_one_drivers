@@ -1,4 +1,4 @@
-import { VehicleFeature } from "../types/driver.type";
+import { VehicleFeature } from "../../types/driver.type";
 
 export type DriverInputDtoType = {
   name: string;

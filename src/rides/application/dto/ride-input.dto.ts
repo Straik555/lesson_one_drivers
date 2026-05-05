@@ -1,4 +1,4 @@
-import { Currency } from "../types/ride.type";
+import { Currency } from "../../types/ride.type";
 
 export type RideInputDtoType = {
   clientName: string;

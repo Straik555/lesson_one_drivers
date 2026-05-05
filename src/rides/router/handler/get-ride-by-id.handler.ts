@@ -1,39 +1,26 @@
 import { Response } from "express";
 import { RequestWithParams } from "../../../core/types/request-general.type";
 import { UriParamsById } from "../../../core/types/uri-params-by-id";
-import { ridesRepository } from "../../repositories/rides.repository";
 import { ErrorsResponse } from "../../../core/types/errors.type";
 import { HTTP_STATUS } from "../../../core/types/http-status.type";
-import { createErrorMessages } from "../../../core/middlewares/validation/input-validation.middleware";
-import { mapToRideViewModelUtil } from "../mappers/map-to-ride-view-model.util";
-import { RideViewModel } from "../model/ride-view.model";
+import { RideOutput } from "../../output/ride.output.type";
+import { rideService } from "../../application/ride.service";
+import { mapToRideOutput } from "../mappers/map-to-ride-output.util";
+import { errorsHandler } from "../../../core/errors/errors.handler";
 
 export const getRideByIdHandler = async (
   req: RequestWithParams<UriParamsById>,
-  res: Response<RideViewModel | ErrorsResponse>,
+  res: Response<RideOutput | ErrorsResponse>,
 ) => {
   try {
     const { id } = req.params;
 
-    const foundRide = await ridesRepository.getById(id);
+    const foundRide = await rideService.findByIdOrFail(id);
 
-    if (!foundRide) {
-      res.status(HTTP_STATUS.NOT_FOUND_404).send(
-        createErrorMessages([
-          {
-            message: "Not found ride with that id",
-            field: "id",
-          },
-        ]),
-      );
-      return;
-    }
+    const rideOutput: RideOutput = mapToRideOutput(foundRide);
 
-    const rideResult = mapToRideViewModelUtil(foundRide);
-
-    res.status(HTTP_STATUS.OK_200).send(rideResult);
+    res.status(HTTP_STATUS.OK_200).send(rideOutput);
   } catch (error) {
-    console.log(error);
-    res.sendStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR_500);
+    errorsHandler(error, res);
   }
 };

@@ -1,4 +1,4 @@
-import { ErrorsResponse, ErrorType } from "../../types/errors.type";
+import { ValidationErrorType } from "../../types/errors.type";
 import {
   FieldValidationError,
   ValidationError,
@@ -6,21 +6,34 @@ import {
 } from "express-validator";
 import { NextFunction, Request, Response } from "express";
 import { HTTP_STATUS } from "../../types/http-status.type";
+import { ValidationErrorListOutput } from "../../types/validation-error.dto.type";
 
-const createErrorMessages = (errors: ErrorType[]): ErrorsResponse => {
-  return { errorMessages: errors };
+const createErrorMessages = (
+  errors: ValidationErrorType[],
+): ValidationErrorListOutput => {
+  return {
+    errors: errors.map((error) => {
+      return {
+        code: error.code ?? null,
+        detail: error.detail,
+        source: { pointer: error.source ?? "" },
+        status: error.status,
+      };
+    }),
+  };
 };
 
-const formatError = (error: ValidationError): ErrorType => {
+const formatError = (error: ValidationError): ValidationErrorType => {
   const expressError = error as unknown as FieldValidationError;
   return {
-    field: expressError.path,
-    message: expressError.msg,
+    detail: expressError.msg,
+    status: HTTP_STATUS.BAD_REQUEST_400,
+    source: expressError.path,
   };
 };
 
 const inputValidationMiddleware = (
-  req: Request,
+  req: Request<{}, {}, {}, {}>,
   res: Response,
   next: NextFunction,
 ) => {
@@ -30,7 +43,7 @@ const inputValidationMiddleware = (
   if (error.length > 0) {
     res
       .status(HTTP_STATUS.UNPROCESSABLE_ENTITY_422)
-      .json({ errorMessages: error });
+      .json(createErrorMessages(error));
     return;
   }
   next();

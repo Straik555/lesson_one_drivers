@@ -4,33 +4,53 @@ import { getDriverByIdHandler } from "./handler/get-driver-by-id.handler";
 import { createDriverHandler } from "./handler/create-driver.handler";
 import { updateDriverByIdHandler } from "./handler/update-driver-by-id.handler";
 import { deleteDriverByIdHandler } from "./handler/delete-driver-by-id.handler";
-import { driverInputValidation } from "../validation/driver-input-validation";
+import {
+  driverCreateInputValidation,
+  driverUpdateInputValidation,
+} from "../validation/driver-input-validation";
 import { paramsIdValidationMiddleware } from "../../core/middlewares/validation/params-id-validation.middleware";
 import { inputValidationMiddleware } from "../../core/middlewares/validation/input-validation.middleware";
 import { adminGuardMiddleware } from "../../auth/middleware/admin.guard-middleware";
+import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting-validation.middleware";
+import { DriverSortField } from "../types/driver-sort-field.type";
+import { getDriverRideListHandler } from "./handler/get-driver-ride-list.handler";
+import { RideSortField } from "../../rides/types/ride-sort-field.type";
+import { driverQueryValidation } from "../validation/driver-query-validation";
 
 export const driversRouter = Router();
 
 driversRouter.use(adminGuardMiddleware);
 
 driversRouter
-  .get("/", getDriverListHandler)
+  .get(
+    "/",
+    paginationAndSortingValidation(DriverSortField, driverQueryValidation),
+    inputValidationMiddleware,
+    getDriverListHandler,
+  )
   .get(
     "/:id",
     paramsIdValidationMiddleware,
     inputValidationMiddleware,
     getDriverByIdHandler,
   )
+  .get(
+    "/:id/rides",
+    paramsIdValidationMiddleware,
+    paginationAndSortingValidation(RideSortField),
+    inputValidationMiddleware,
+    getDriverRideListHandler,
+  )
   .post(
     "/",
-    driverInputValidation,
+    driverCreateInputValidation,
     inputValidationMiddleware,
     createDriverHandler,
   )
   .put(
     "/:id",
     paramsIdValidationMiddleware,
-    driverInputValidation,
+    driverUpdateInputValidation,
     inputValidationMiddleware,
     updateDriverByIdHandler,
   )

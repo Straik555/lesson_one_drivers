@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { HTTP_STATUS } from "../../core/types/http-status.type";
-import { appConfig } from "../../core/configs/app.configs";
+import { SETTINGS } from "../../core/settings/settings";
 
 export const adminGuardMiddleware = (
   req: Request,
@@ -23,8 +23,8 @@ export const adminGuardMiddleware = (
   const [username, password] = credentials.split(":");
 
   if (
-    username !== appConfig.ADMIN_USERNAME ||
-    password !== appConfig.ADMIN_PASSWORD
+    username !== SETTINGS.ADMIN_USERNAME ||
+    password !== SETTINGS.ADMIN_PASSWORD
   ) {
     res.sendStatus(HTTP_STATUS.UNAUTHORIZED_401);
     return;

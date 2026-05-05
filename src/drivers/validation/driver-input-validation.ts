@@ -1,17 +1,20 @@
 import { body } from "express-validator";
 import { VehicleFeature } from "../types/driver.type";
+import { resourceTypeValidation } from "../../core/middlewares/validation/resource-validation.middleware";
+import { ResourceType } from "../../core/types/resource.type";
+import { dataIdMatchValidation } from "../../core/middlewares/validation/params-id-validation.middleware";
 
 const phoneRegex = /^(\d{3})-(\d{3})-(\d{4})$/;
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-const nameValidation = body("name")
+const nameValidation = body("data.attributes.name")
   .isString()
   .withMessage("The name is incorrect format")
   .trim()
   .isLength({ min: 3 })
   .withMessage("The name must be at least 3 characters long");
 
-const phoneNumberValidation = body("phoneNumber")
+const phoneNumberValidation = body("data.attributes.phoneNumber")
   .isString()
   .withMessage("The phone number should be string")
   .trim()
@@ -20,7 +23,7 @@ const phoneNumberValidation = body("phoneNumber")
   .isLength({ min: 12, max: 12 })
   .withMessage("The phone number must be at least 3 characters long");
 
-const emailValidation = body("email")
+const emailValidation = body("data.attributes.email")
   .isString()
   .withMessage("The email should be string")
   .trim()
@@ -28,14 +31,14 @@ const emailValidation = body("email")
   .withMessage("The email must be at least 5 to 100 characters long")
   .isEmail();
 
-const vehicleMakeValidation = body("vehicleMake")
+const vehicleMakeValidation = body("data.attributes.vehicleMake")
   .isString()
   .withMessage("The vehicle make should be string")
   .trim()
   .isLength({ min: 3, max: 100 })
   .withMessage("The vehicle make must be at least 3 to 100 characters long");
 
-const vehicleModelValidation = body("vehicleModel")
+const vehicleModelValidation = body("data.attributes.vehicleModel")
   .isString()
   .withMessage("The vehicle model should be string")
   .trim()
@@ -43,11 +46,13 @@ const vehicleModelValidation = body("vehicleModel")
   .withMessage("The vehicle model must be at least 2 to 100 characters long");
 
 const currentYear = new Date().getFullYear();
-const vehicleYearValidation = body("vehicleYear")
+const vehicleYearValidation = body("data.attributes.vehicleYear")
   .isInt({ min: 1900, max: currentYear })
   .withMessage("The vehicle year is incorrect format");
 
-const vehicleLicensePlateValidation = body("vehicleLicensePlate")
+const vehicleLicensePlateValidation = body(
+  "data.attributes.vehicleLicensePlate",
+)
   .isString()
   .withMessage("The vehicle license plate is incorrect format")
   .trim()
@@ -56,7 +61,7 @@ const vehicleLicensePlateValidation = body("vehicleLicensePlate")
     "The vehicle license plate must be at least 6 to 10 characters long",
   );
 
-const vehicleDescriptionValidation = body("vehicleDescription")
+const vehicleDescriptionValidation = body("data.attributes.vehicleDescription")
   .optional({
     values: "null",
   })
@@ -68,7 +73,7 @@ const vehicleDescriptionValidation = body("vehicleDescription")
     "The vehicle license plate must be at least 1 to 100 characters long",
   );
 
-const vehicleFeaturesValidation = body("vehicleFeatures")
+const vehicleFeaturesValidation = body("data.attributes.vehicleFeatures")
   .isArray()
   .withMessage("The vehicle features should be array")
   .optional()
@@ -87,7 +92,8 @@ const vehicleFeaturesValidation = body("vehicleFeatures")
     return true;
   });
 
-export const driverInputValidation = [
+const driverInputValidation = [
+  resourceTypeValidation(ResourceType.Drivers),
   nameValidation,
   phoneNumberValidation,
   emailValidation,
@@ -98,3 +104,12 @@ export const driverInputValidation = [
   vehicleDescriptionValidation,
   vehicleFeaturesValidation,
 ];
+
+const driverCreateInputValidation = [...driverInputValidation];
+
+const driverUpdateInputValidation = [
+  ...driverInputValidation,
+  dataIdMatchValidation,
+];
+
+export { driverCreateInputValidation, driverUpdateInputValidation };

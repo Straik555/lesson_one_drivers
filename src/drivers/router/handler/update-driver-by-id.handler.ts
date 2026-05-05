@@ -1,31 +1,25 @@
 import { Response } from "express";
 import { RequestWithParamsAndBody } from "../../../core/types/request-general.type";
 import { UriParamsById } from "../../../core/types/uri-params-by-id";
-import { DriverViewModel } from "../model/driver-view.model";
 import { ErrorsResponse } from "../../../core/types/errors.type";
 import { HTTP_STATUS } from "../../../core/types/http-status.type";
-import { driversRepository } from "../../repositories/drivers.repository";
-import { DriverInputDtoType } from "../../dto/driver-input.dto";
+import { driversService } from "../../application/driver.service";
+import { errorsHandler } from "../../../core/errors/errors.handler";
+import { DriverUpdateInput } from "../../types/driver-update.type";
+import { DriverOutputType } from "../output/driver.output.type";
 
 export const updateDriverByIdHandler = async (
-  req: RequestWithParamsAndBody<UriParamsById, DriverInputDtoType>,
-  res: Response<DriverViewModel | ErrorsResponse>,
+  req: RequestWithParamsAndBody<UriParamsById, DriverUpdateInput>,
+  res: Response<DriverOutputType | ErrorsResponse>,
 ) => {
   try {
     const { id } = req.params;
-    const { body } = req;
+    const { attributes } = req.body.data;
 
-    const foundDriver = await driversRepository.getById(id);
-
-    if (!foundDriver) {
-      res.sendStatus(HTTP_STATUS.NOT_FOUND_404);
-      return;
-    }
-
-    await driversRepository.update(id, body);
+    await driversService.update(id, attributes);
 
     res.sendStatus(HTTP_STATUS.NO_CONTENT_204);
   } catch (error) {
-    res.sendStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR_500);
+    errorsHandler(error, res);
   }
 };

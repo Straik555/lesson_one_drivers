@@ -1,16 +1,36 @@
-import { Request, Response } from "express";
-import { ridesRepository } from "../../repositories/rides.repository";
+import { Response } from "express";
 import { HTTP_STATUS } from "../../../core/types/http-status.type";
-import { mapToRideViewModelUtil } from "../mappers/map-to-ride-view-model.util";
-import { RideViewModel } from "../model/ride-view.model";
+import { errorsHandler } from "../../../core/errors/errors.handler";
+import { RequestWithQuery } from "../../../core/types/request-general.type";
+import { RideQueryInput } from "../../types/ride-query-input.type";
+import { RideListPaginatedOutput } from "../../output/ride-list-paginated.output.type";
+import { matchedData } from "express-validator";
+import { setDefaultSortAndPagination } from "../../../core/helpers/set-default-sort-and-pagination.helper";
+import { rideService } from "../../application/ride.service";
+import { mapToRideListPaginatedOutput } from "../mappers/map-to-ride-list-paginated-output.util";
 
 export const getRidesListHandler = async (
-  req: Request,
-  res: Response<RideViewModel[]>,
+  req: RequestWithQuery<RideQueryInput>,
+  res: Response<RideListPaginatedOutput>,
 ) => {
-  const ridesList = await ridesRepository.getAll();
+  try {
+    const sanitizedQuery = matchedData<RideQueryInput>(req, {
+      locations: ["query"],
+      includeOptionals: true,
+    });
 
-  const rideResult = ridesList.map((ride) => mapToRideViewModelUtil(ride));
+    const queryInput = setDefaultSortAndPagination(sanitizedQuery);
 
-  res.status(HTTP_STATUS.OK_200).json(rideResult);
+    const { items, totalCount } = await rideService.findMany(queryInput);
+
+    const rideListOutput = mapToRideListPaginatedOutput(items, {
+      page: queryInput.pageNumber,
+      pageSize: queryInput.pageSize,
+      totalCount,
+    });
+
+    res.status(HTTP_STATUS.OK_200).json(rideListOutput);
+  } catch (error) {
+    errorsHandler(error, res);
+  }
 };
